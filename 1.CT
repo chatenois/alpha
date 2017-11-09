@@ -3,7 +3,7 @@
   <CheatEntries>
     <CheatEntry>
       <ID>3</ID>
-      <Description>"[X] &lt;== Warhammer 2 Total War v1.1.0-4871 Steam Script v3.3"</Description>
+      <Description>"[X] &lt;== Warhammer 2 Total War v1.1.0-5003 Beta Steam Script v3.3"</Description>
       <Options moHideChildren="1" moDeactivateChildrenAsWell="1"/>
       <LastState/>
       <Color>FF0000</Color>
@@ -11,7 +11,7 @@
       <AssemblerScript>{
 ===========================================
  Game Title    : Total War - Warhammer 2
- Game Version  : 1.1.0 (4871)
+ Game Version  : 1.1.0 (5003) beta
  Game Sponsor  : Patrons
  Process Name  : Warhammer2.exe
  Relevant Info : 64bits/TBS/RTS
@@ -27,6 +27,7 @@
  10-Oct-2017: God Mode for Auto-Resolve battles and Troop Quick Level Up (s3.2)
  26-Oct-2017: Release for version 1.1.0-4871
  28-Oct-2017: Porting of AMBER features from Warhammer TW (s3.3)
+ 04-Nov-2017: Release for version 1.1.0-5003 beta
  Features:
  - God Mode (RTS)
  - Full Ammo
@@ -74,32 +75,32 @@
 //=========================================
 // Definitions
 define(LUDO,"Warhammer2.exe")
-define(GDMD,Warhammer2.exe+0046ffc0) //=
-define(MOTA,Warhammer2.exe+007de5b6) //=
-define(GDM2,Warhammer2.exe+00619220) //=
-define(MOTU,Warhammer2.exe+00341288) //= 3 2
-define(MOWM,Warhammer2.exe+0053dd1f) //=
+define(GDMD,Warhammer2.exe+00470450) //==
+define(MOTA,Warhammer2.exe+007df026) //==
+define(GDM2,Warhammer2.exe+00618fe0) //==
+define(MOTU,Warhammer2.exe+00341448) //== 3 2
+define(MOWM,Warhammer2.exe+0053de1f) //==
 
-define(MOHP,Warhammer2.exe+01f7369a) //=
-define(MOAP,Warhammer2.exe+00948a40) //=
-define(MAP2,Warhammer2.exe+0090c382) //=
-define(MAP3,Warhammer2.exe+00af6d40) //=
-define(MAP4,Warhammer2.exe+00948944) //=
-define(MORP,Warhammer2.exe+00ac834f) //=
-define(MOTR,Warhammer2.exe+00c44f0b) //=
-define(MOCP,Warhammer2.exe+00f6cdb0) //=
-define(MOPO,Warhammer2.exe+00c4e109) //=
-define(MOPS,Warhammer2.exe+020b8e3e) //=
-define(MPS2,Warhammer2.exe+04bf9cfc) //= (s3.1)
-define(MOSH,Warhammer2.exe+01dd8dd2) //=
-define(MOPF,Warhammer2.exe+02088b5f) //=
-define(MORC,Warhammer2.exe+00e0e5d7) //=
-define(MRC2,Warhammer2.exe+00e0e679) //=
-define(GMTB,Warhammer2.exe+008dedc4) //= (s3.2)
-define(MOPA,Warhammer2.exe+01331612) //N (s3.3)
+define(MOHP,Warhammer2.exe+01f7243a) //==
+define(MOAP,Warhammer2.exe+009488e0) //==
+define(MAP2,Warhammer2.exe+0090bf32) //==
+define(MAP3,Warhammer2.exe+00af69a0) //==
+define(MAP4,Warhammer2.exe+009487e4) //==
+define(MORP,Warhammer2.exe+00ac7c7f) //==
+define(MOTR,Warhammer2.exe+00c44ddb) //==
+define(MOCP,Warhammer2.exe+00f6d210) //==
+define(MOPO,Warhammer2.exe+00c4e039) //==
+define(MOPS,Warhammer2.exe+020b989e) //==
+define(MPS2,Warhammer2.exe+048c061c) //== (s3.1)
+define(MOSH,Warhammer2.exe+01dd8092) //==
+define(MOPF,Warhammer2.exe+0208968f) //==
+define(MORC,Warhammer2.exe+00e0ed97) //==
+define(MRC2,Warhammer2.exe+00e0ee39) //==
+define(GMTB,Warhammer2.exe+008debb4) //== (s3.2)
+define(MOPA,Warhammer2.exe+01330ee2) //N= (s3.3)
 
-define(RPAS,Warhammer2.exe+00a054fe) //N (s3.3)
-define(RPAE,Warhammer2.exe+009f6967) //N (s3.3)
+define(RPAS,Warhammer2.exe+00a0521e) //N= (s3.3)
+define(RPAE,Warhammer2.exe+009f6687) //N= (s3.3)
 
 //=========================================
 // Constants used in the script (that can be changed)
@@ -993,7 +994,7 @@ _ExitMPA:
 align 10,'='
 //=========================================
  db '===============================&gt;'
- db 'CE6.7 Script by Recifense 171028'
+ db 'CE6.7 Script by Recifense 171104'
 //=========================================
 // Variables
 iEnableGMD:
@@ -2294,12 +2295,12 @@ getMainForm().CommentButton.doClick()
   <UserdefinedSymbols>
     <SymbolEntry>
       <Name>Recifense</Name>
-      <Address>20171026</Address>
+      <Address>20171104</Address>
     </SymbolEntry>
   </UserdefinedSymbols>
   <Comments>===========================================
  Game Title    : Total War - Warhammer 2
- Game Version  : 1.1.0 (4871)
+ Game Version  : 1.1.0 (5003) beta
  Game Sponsor  : Patrons
  Process Name  : Warhammer2.exe
  Relevant Info : 64bits/TBS/RTS
@@ -2315,6 +2316,7 @@ getMainForm().CommentButton.doClick()
  10-Oct-2017: God Mode for Auto-Resolve battles and Troop Quick Level Up (s3.2)
  26-Oct-2017: Release for version 1.1.0-4871
  28-Oct-2017: Porting of AMBER features from Warhammer TW (s3.3)
+ 04-Nov-2017: Release for version 1.1.0-5003 beta
  Features:
  - God Mode (RTS)              [1]
  - Full Ammo                   [2]
