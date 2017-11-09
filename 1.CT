@@ -1,0 +1,2382 @@
+<?xml version="1.0" encoding="utf-8"?>
+<CheatTable CheatEngineTableVersion="26">
+  <CheatEntries>
+    <CheatEntry>
+      <ID>3</ID>
+      <Description>"[X] &lt;== Warhammer 2 Total War v1.1.0-4871 Steam Script v3.3"</Description>
+      <Options moHideChildren="1" moDeactivateChildrenAsWell="1"/>
+      <LastState/>
+      <Color>FF0000</Color>
+      <VariableType>Auto Assembler Script</VariableType>
+      <AssemblerScript>{
+===========================================
+ Game Title    : Total War - Warhammer 2
+ Game Version  : 1.1.0 (4871)
+ Game Sponsor  : Patrons
+ Process Name  : Warhammer2.exe
+ Relevant Info : 64bits/TBS/RTS
+ Script Version: 3.3
+ CE Version    : 6.7
+ Release date  : 28-Oct-2017
+ Author        : Recifense
+ History:
+ 29-Sep-2017: First Release
+ 30-Sep-2017: Trying to Fix Construction + Minimum Food (s2.0)
+ 01-Oct-2017: Added "Rites Cooldown in 1 turn" and fix "CanActAgain" (s3.0)
+ 03-Oct-2017: Included Arks in Pop Surplus (s3.1)
+ 10-Oct-2017: God Mode for Auto-Resolve battles and Troop Quick Level Up (s3.2)
+ 26-Oct-2017: Release for version 1.1.0-4871
+ 28-Oct-2017: Porting of AMBER features from Warhammer TW (s3.3)
+ Features:
+ - God Mode (RTS)
+ - Full Ammo
+ - Minimum Leadership (GM)
+ - Fast Recover of Winds of Magic
+ - Minimum Treasure
+ - Minimum Influence
+ - Minimum Food (Skaven)
+ - Unlimited Action Points
+ - Recover Troop Size/Hero HP
+ - Research in 1 turn
+ - Recruitment in 1 turn
+ - Construction in 1 turn
+ - Rites Cooldown in 1 turn
+ - Minimum Public Order
+ - Minimum Pop Surplus (including Arks) (s3.1)
+ - Level almost complete (sel hero XP)
+ - Hero can Act Again
+ - God Mode for Auto-resolve battles (s3.2)
+ - Troops Quick Level Up             (s3.2)
+ - Minimum Amber Per Settlement      (s3.3)
+ - Minimum Event Total Amber         (s3.3)
+ - Some Pointers
+===========================================
+}
+
+//=========================================
+// Checking CE version
+{$lua}
+  if(getCEVersion() &lt; 6.7) then
+    ShowMessage('Sorry. CE version should be 6.7 or above')
+  end
+{$asm}
+
+//=========================================
+// Checking Selected Process
+{$lua}
+  if(process == nil) then
+    ShowMessage('No process was selected')
+  elseif (process ~= "Warhammer2.exe") then
+    ShowMessage('Error. Expected Process = Warhammer2.exe')
+  end
+{$asm}
+
+//=========================================
+// Definitions
+define(LUDO,"Warhammer2.exe")
+define(GDMD,Warhammer2.exe+0046ffc0) //=
+define(MOTA,Warhammer2.exe+007de5b6) //=
+define(GDM2,Warhammer2.exe+00619220) //=
+define(MOTU,Warhammer2.exe+00341288) //= 3 2
+define(MOWM,Warhammer2.exe+0053dd1f) //=
+
+define(MOHP,Warhammer2.exe+01f7369a) //=
+define(MOAP,Warhammer2.exe+00948a40) //=
+define(MAP2,Warhammer2.exe+0090c382) //=
+define(MAP3,Warhammer2.exe+00af6d40) //=
+define(MAP4,Warhammer2.exe+00948944) //=
+define(MORP,Warhammer2.exe+00ac834f) //=
+define(MOTR,Warhammer2.exe+00c44f0b) //=
+define(MOCP,Warhammer2.exe+00f6cdb0) //=
+define(MOPO,Warhammer2.exe+00c4e109) //=
+define(MOPS,Warhammer2.exe+020b8e3e) //=
+define(MPS2,Warhammer2.exe+04bf9cfc) //= (s3.1)
+define(MOSH,Warhammer2.exe+01dd8dd2) //=
+define(MOPF,Warhammer2.exe+02088b5f) //=
+define(MORC,Warhammer2.exe+00e0e5d7) //=
+define(MRC2,Warhammer2.exe+00e0e679) //=
+define(GMTB,Warhammer2.exe+008dedc4) //= (s3.2)
+define(MOPA,Warhammer2.exe+01331612) //N (s3.3)
+
+define(RPAS,Warhammer2.exe+00a054fe) //N (s3.3)
+define(RPAE,Warhammer2.exe+009f6967) //N (s3.3)
+
+//=========================================
+// Constants used in the script (that can be changed)
+define(ctCE67,(float)6.7)
+define(ctMMON,#67000)  // Minimum Money
+define(ctMINF,#67)     // Minimum Influence
+define(ctMFOO,#80)     // Minimum Food
+define(ctMAPS,(float)5.0)
+define(ctMAPE,(float)15.0)
+
+//=========================================
+[ENABLE]
+//=========================================
+//LuaCall(CheckVersion())
+//=========================================
+// Check if script is compatible to this game version
+// If false the script will not be loaded
+
+assert(GDMD,8b 41 04 3b d0 ?? ?? c7 41 04 00 00 00 00 ?? ?? 2b c2 89 41 04 8b)
+assert(MOTA,85 c0 74 04 ff c8 89 02 83 3a 00 0f 85 ?? ?? ?? ?? c6 81 fe 3a 00)
+assert(GDM2,40 55 41 54 41 56 41 57 48 8d 6c 24 d8 48 81 ec 28 01 00 00 4c 8b)
+assert(MOTU,48 8b 88 e8 02 00 00 48 85 c9 ?? ?? e8 ?? ?? ?? ?? 84 c0 ?? ?? 49)
+assert(MOWM,f3 0f 58 47 08 0f 2f c1 f3 0f 11 47 08 ?? ?? f3 0f 11 4f 08 48 8b)
+
+assert(MOHP,48 8b 8a 80 01 00 00 48 81 c1 70 02 00 00 e8 ?? ?? ?? ?? 45 33 e4)
+assert(MOAP,8b 81 98 00 00 00 c7 81 e0 01 00 00 ff ff ff ff 3b c2 ?? ?? 2b c2)
+assert(MAP2,41 8b 87 98 00 00 00 41 89 86 ec 00 00 00 49 8b 47 60 48 85 c0 ??)
+assert(MAP3,44 8b 41 1c 41 3b d0 ?? ?? 41 8b c0 c7 81 c8 00 00 00 ff ff ff ff)
+assert(MAP4,2b f0 89 43 1c 0f 48 f5 48 8b 6c 24 30 01 73 20 48 8b 74 24 38 48)
+assert(MORP,44 03 c1 44 3b 40 5c 0f 83 ?? ?? ?? ?? 44 89 42 0c 48 8b 06 48 8b)
+assert(MOTR,03 43 50 48 83 c4 20 5b c3 83 c8 ff 48 83 c4 20 5b c3 cc ?? ?? ??)
+assert(MOCP,ff 41 0c 8b 41 0c 3b 41 10 0f 93 c0 c3 cc cc ?? ?? ?? ?? ?? ?? ??)
+assert(MOPO,8b 51 3c 89 53 0c 83 79 4c 01 ?? ?? 48 8b 09 48 81 c1 98 00 00 00)
+assert(MOPS,44 8b ba 3c 03 00 00 48 8d b2 30 03 00 00 48 8b da 4c 8b e1 b2 01)
+assert(MPS2,48 8b 88 b8 05 00 00 48 8b 41 18 8b 40 08 c3 ?? ?? ?? ?? ?? ?? ??)
+assert(MOSH,45 8b bd 5c 02 00 00 44 8b f0 44 2b f3 44 2b fb 48 8b 0d ?? ?? ??)
+assert(MOPF,48 8b 47 08 48 8b 5c 24 40 8b 40 20 48 83 c4 30 5f c3 cc cc ?? ??)
+assert(MORC,ff ca 89 50 34 48 8b 40 08 48 3b c1 ?? ?? 48 8b 9d 10 01 00 00 48)
+assert(MRC2,ff ca 89 50 20 48 8b 40 08 48 3b c1 ?? ?? 48 83 c4 28 c3 cc cc cc)
+assert(GMTB,80 b8 80 01 00 00 00 4c 8b ea ?? ?? 8b 42 58 ?? ?? 8b 42 6c 89 41 78)
+assert(MOPA,f3 41 0f 10 4b 10 0f 57 c0 0f 2f c8 ?? ?? f3 0f 58 0d ?? ?? ?? ??)
+
+//=========================================
+alloc(MyCode,4096,$process)
+//=========================================
+// Declaration section
+label(_GodMode)
+label(_BackGMD)
+label(_MonTroopAmmo)
+label(_BackMTA)
+label(_GodMode2)
+label(_BackGM2)
+label(_MonTroopUnits)
+label(_BackMTU)
+label(_MonWindsOfMagic)
+label(_BackMWM)
+
+label(_MonHumanPlayer)
+label(_BackMHP)
+label(_MonActionPoints)
+label(_BackMAP)
+label(_MonActionPoints2)
+label(_BackAP2)
+label(_MonActionPoints3)
+label(_BackAP3)
+label(_MonActionPoints4)
+label(_BackAP4)
+label(_MonResearchProg)
+label(_BackMRP)
+label(_MonTroopRecruit)
+label(_BackMTR)
+label(_MonConstProg)
+label(_BackMCP)
+label(_MonPublicOrder)
+label(_BackMPO)
+label(_MonPopSurplus)
+label(_BackMPS)
+label(_MonPopSurplus2)
+label(_BackPS2)
+label(_MonSelHero)
+label(_BackMSH)
+label(_MonPlayerFood)
+label(_BackMPF)
+label(_MonRitesCD)
+label(_BackMRC)
+label(_MonRitesCD2)
+label(_BackRC2)
+label(_GodModeTBS)
+label(_BackGMT)
+label(_MonPlayerAmber)
+label(_BackMPA)
+label(_ExitMPA)
+
+label(iEnableGMD)
+label(iEnableMTA)
+label(iEnableMTL)
+label(iEnableMWM)
+label(iEnableMMT)
+label(iEnableMAP)
+label(iEnableMTS)
+label(iEnableMRP)
+label(iEnableMTR)
+label(iEnableMCP)
+label(iEnableMPO)
+label(iEnableMPS)
+label(iEnableMXP)
+label(iEnableHAA)
+label(iEnableMPI)
+label(iEnableMPF)
+label(iEnableMRC)
+label(iEnableGMT)
+label(iEnableMTX)
+label(iEnablePAE)
+label(iEnablePAS)
+
+label(pPlayer)
+label(pLord)
+label(pHero)
+label(pUnit)
+label(pDebug)
+label(pCommon)
+label(pFood)
+label(lRBX)
+label(aLast)
+
+//=========================================
+// Registering Symbols
+registersymbol(MyCode)
+registersymbol(iEnableGMD)
+registersymbol(iEnableMTA)
+registersymbol(iEnableMTL)
+registersymbol(iEnableMWM)
+registersymbol(iEnableMMT)
+registersymbol(iEnableMAP)
+registersymbol(iEnableMTS)
+registersymbol(iEnableMRP)
+registersymbol(iEnableMTR)
+registersymbol(iEnableMCP)
+registersymbol(iEnableMPO)
+registersymbol(iEnableMPS)
+registersymbol(iEnableMXP)
+registersymbol(iEnableHAA)
+registersymbol(iEnableMPI)
+registersymbol(iEnableMPF)
+registersymbol(iEnableMRC)
+registersymbol(iEnableGMT)
+registersymbol(iEnableMTX)
+registersymbol(iEnablePAE)
+registersymbol(iEnablePAS)
+registersymbol(pPlayer)
+registersymbol(pLord)
+registersymbol(pHero)
+registersymbol(pUnit)
+registersymbol(pDebug)
+registersymbol(pCommon)
+registersymbol(pFood)
+registersymbol(aLast)
+
+//=========================================
+MyCode:
+//========================================= 2 ok
+// RTS - During Combat (HP)(Troop/Hero)
+_GodMode:
+ mov dword ptr [aLast],'_GMD'
+
+ mov [pDebug],rbx
+
+ cmp dword ptr [iEnableGMD],0
+ je _ExitGMD                       // Jump if feature is disabled
+
+ lea rax,[rcx-00000ae8]
+ cmp rax,rbx
+ jne _ExitGMD
+
+ mov rax,[rbx+000002e8]
+ test rax,rax
+ jz _ExitGMD
+
+ cmp byte ptr [rax+00003af8],00
+ jne _ExitGMD
+
+ mov eax,[rcx]
+ mov [rcx+04],eax
+
+ xor edx,edx
+
+_ExitGMD:
+ mov eax,[rcx+04]                  // Original code (get cHP)
+ cmp edx,eax                       // Original code
+ jmp _BackGMD                      // Back to main code
+
+//========================================= 2 ok
+// RTS - After decreasing Ammo
+_MonTroopAmmo:
+ mov dword ptr [aLast],'_MTA'
+
+ test eax,eax                       // Original code
+ jz _MonTA00
+
+ cmp dword ptr [iEnableMTA],0
+ je _ExitMTA                       // Jump if feature is disabled
+
+ cmp byte ptr [rsi+00003af8],00
+ jne _ExitMTA
+
+ mov eax,[rsi+00003b74]
+ mov [rsi+00003b70],eax
+
+ inc eax
+
+_ExitMTA:
+ dec eax                           // Original code
+ mov [rdx],eax                     // Original code
+
+_MonTA00:
+ jmp _BackMTA                      // Back to main code
+
+//========================================= 2 ok
+// RTS - During Combat (HP)(Troop)
+_GodMode2:
+ mov dword ptr [aLast],'_GM2'
+
+ push rax
+
+ cmp dword ptr [iEnableGMD],0
+ je _ExitGM2                       // Jump if feature is disabled
+
+ test rcx,rcx
+ jz _ExitGM2
+
+ mov rax,[rcx+000002e8]
+ test rax,rax
+ jz _ExitGM2
+
+ cmp byte ptr [rax+00003af8],00
+ jne _ExitGM2
+
+ mov eax,[rcx+00000ae8]
+ mov [rcx+00000aec],eax
+
+ pop rax
+ ret
+//==
+_ExitGM2:
+ pop rax
+
+ push rbp                          // Original code
+ push r12                          // Original code
+ push r14                          // Original code
+ jmp _BackGM2                      // Back to main code
+
+//========================================= 2 ok
+// RTS - All the time during battle
+_MonTroopUnits:
+ mov dword ptr [aLast],'_MTU'
+
+ push rax
+ push rbx
+ push rdx
+
+ mov rdx,rax
+
+ mov rcx,[rdx+000002E8]
+ test rcx,rcx
+ jz _ExitMTU
+
+ cmp dword ptr [rcx+70],55555555
+
+ cmp byte ptr [rcx+00003370],01
+
+ cmp byte ptr [rcx+00003af8],00
+ jne _ExitMTU
+
+ mov rax,[rcx+70]
+ mov [pCommon],rax
+
+ cmp dword ptr [iEnableGMD],0
+ je _MonTU00                       // Jump if feature is disabled
+
+ mov eax,#100
+ mov ebx,[rcx+00003794]
+ cmp ebx,eax
+ cmovs ebx,eax
+ mov [rcx+00003794],ebx
+
+ mov [rcx+00003990],eax
+ mov [rcx+00003994],eax
+
+_MonTU00:
+ cmp dword ptr [iEnableGMD],0
+ je _ExitMTU                       // Jump if feature is disabled
+
+ cmp dword ptr [rdx+00000aec],0
+ je _ExitMTU
+
+ mov eax,#671000
+ mov [rdx+00000ae8],eax
+ mov [rdx+00000aec],eax
+
+_ExitMTU:
+ pop rdx
+ pop rbx
+ pop rax
+
+ mov rcx,[rax+000002E8]            // Original code (get pTroop)
+ jmp _BackMTU                      // Back to main code
+
+//========================================= 2 ok
+// RTS - When increasing value
+_MonWindsOfMagic:
+ mov dword ptr [aLast],'_MWM'
+
+ mov [lRBX],rbx
+
+ addss xmm0,[rdi+08]               // Original code (inc cWoM)
+
+ cmp dword ptr [iEnableMWM],0
+ je _ExitMWM                       // Jump if feature is disabled
+
+ mov rbx,[rdi]
+ cmp rbx,[pCommon]
+ jne _ExitMWM
+
+ movss xmm0,xmm1
+
+_ExitMWM:
+ mov rbx,[lRBX]
+ jmp _BackMWM                      // Back to main code
+
+//========================================= ok
+//------------------------------TBS --------------------------------------
+//========================================= 2 ok (s2.0)
+// TBS - All the time at main game screen
+_MonHumanPlayer:
+ mov dword ptr [aLast],'_MHP'
+
+ mov rcx,[rdx+00000180]            // Original code (get pPlayer)
+
+ mov [pPlayer],rcx
+ mov rax,[rcx+00000b70]            // **
+ mov [pWay],rax
+
+ cmp dword ptr [iEnableMMT],0
+ je _MonHP00                       // Jump if feature is disabled
+
+ mov eax,ctMMON
+ cmp [rcx+00000b40],eax
+ jns _MonHP00
+
+ mov [rcx+00000b40],eax
+
+_MonHP00:
+ cmp dword ptr [iEnableMPI],0
+ je _ExitMHP                       // Jump if feature is disabled
+
+ cmp [rcx+00000de0],0
+ je _ExitMHP
+
+ mov eax,ctMINF
+ cmp [rcx+00000de0],eax
+ jns _ExitMHP
+
+ mov [rcx+00000de0],eax
+
+_ExitMHP:
+ jmp _BackMHP                      // Back to main code
+
+//========================================= 2 ok
+// TBS - WHen troop is moving (MP, TS, HHP)
+_MonActionPoints:
+ mov dword ptr [aLast],'_MAP'
+
+ mov rax,[rcx+68]
+ cmp rax,[pPlayer]
+ jne _ExitMAP
+
+ cmp dword ptr [iEnableMAP],0
+ je _MonAP00                       // Jump if feature is disabled
+
+ xor edx,edx
+
+_MonAP00:
+ cmp dword ptr [iEnableMTS],0
+ je _ExitMAP                       // Jump if feature is disabled
+
+ mov eax,[rcx+7c]
+ mov [rcx+78],eax
+
+_ExitMAP:
+ mov eax,[rcx+00000098]            // Original code (get AP)
+ jmp _BackMAP                      // Back to main code
+
+//========================================= 2 ok
+// TBS - When Army is selected (MP, TS, HHP)
+_MonActionPoints2:
+ mov dword ptr [aLast],'_MA2'
+
+ mov rax,[r15+68]
+ cmp rax,[pPlayer]
+ jne _ExitAP2
+
+ cmp dword ptr [r15+000001a0],0
+ je _MonAP2Z
+
+ mov [pLord],r15
+
+_MonAP2Z:
+ cmp dword ptr [iEnableMAP],0
+ je _MonAP20                       // Jump if feature is disabled
+
+ mov eax,#3661
+ cmp eax,[r15+00000098]
+ js _MonAP20
+
+ mov [r15+00000098],eax
+
+_MonAP20:
+ cmp dword ptr [iEnableMTS],0
+ je _ExitAP2                       // Jump if feature is disabled
+
+ mov eax,[r15+7c]
+ mov [r15+78],eax
+
+_ExitAP2:
+ mov eax,[r15+00000098]            // Original code (get AP)
+ jmp _BackAP2                      // Back to main code
+
+//========================================= 2 ok
+// TBS - When Hero is moving
+_MonActionPoints3:
+ mov dword ptr [aLast],'_MA3'
+
+ cmp dword ptr [iEnableMAP],0
+ je _ExitAP3                       // Jump if feature is disabled
+
+ mov r8,[rcx+000002b0]
+ test r8,r8
+ jz _ExitAP3
+
+ mov r8,[r8]
+ cmp r8,[pPlayer]
+ jne _ExitAP3
+
+ mov r8d,[rcx+18]
+ mov [rcx+1c],r8d
+
+ xor edx,edx
+
+ mov [rcx+20],edx
+
+_ExitAP3:
+ mov r8d,[rcx+1c]                  // Original code (get AP)
+ cmp edx,r8d                       // Original code
+ jmp _BackAP3                      // Back to main code
+
+//========================================= 2 ok
+// TBS - When Lord is moving (in the army)
+_MonActionPoints4:
+ mov dword ptr [aLast],'_MA4'
+
+ push rcx
+
+ mov rcx,[rbx+000002b0]
+ test rcx,rcx
+ jz _ExitAP4
+
+ mov rcx,[rcx]
+ cmp rcx,[pPlayer]
+ jne _ExitAP4
+
+ mov [pHero],rbx                   // It is, in fact, a Lord
+
+ cmp dword ptr [iEnableMAP],0
+ je _ExitAP4                       // Jump if feature is disabled
+
+ mov eax,[rbx+18]
+
+ xor rsi,rsi
+ mov [rbx+20],esi
+
+_ExitAP4:
+ pop rcx
+
+ sub esi,eax                       // Original code
+ mov [rbx+1C],eax                  // Original code (upd AP)
+ jmp _BackAP4                      // Back to main code
+
+//========================================= 2 ok
+// TBS - During Turn Changing
+_MonResearchProg:
+ mov dword ptr [aLast],'_MRP'
+
+ add r8d,ecx                       // Original code
+
+ cmp dword ptr [iEnableMRP],0
+ je _ExitMRP                       // Jump if feature is disabled
+
+ mov rcx,[rsi+20]
+ cmp rcx,[pPlayer]
+ jne _ExitMRP
+
+ mov r8d,[rax+5C]
+
+_ExitMRP:
+ cmp r8d,[rax+5C]                  // Original code (chk if finished)
+ jmp _BackMRP                      // Back to main code
+
+//========================================= 2 ok
+// TBS - When looking at the Army (When recruiting)
+_MonTroopRecruit:
+ mov dword ptr [aLast],'_MTR'
+
+ push rcx
+
+ cmp dword ptr [iEnableMTR],0
+ je _ExitMTR                       // Jump if feature is disabled
+
+ mov rcx,[rbx+38]
+ test rcx,rcx
+ jz _ExitMTR
+
+ mov rcx,[rcx+50]
+ cmp rcx,[pPlayer]
+ jne _ExitMTR
+
+ mov dword ptr [rbx+50],0
+
+_ExitMTR:
+ pop rcx
+
+ add eax,[rbx+50]                  // Original code (get #turns)
+ add rsp,20                        // Original code
+ jmp _BackMTR                      // Back to main code
+
+//========================================= 2 ok (s1.1)
+// TBS - During Turn Changing
+_MonConstProg:
+ mov dword ptr [aLast],'_MCP'
+
+ inc [rcx+0C]                      // Original code (upd prog)
+
+ cmp dword ptr [rcx+10],1
+ je _ExitMCP
+
+ cmp dword ptr [iEnableMCP],0
+ je _ExitMCP                       // Jump if feature is disabled
+
+ mov rax,[rcx+38]
+ test rax,rax
+ jz _ExitMCP
+
+ mov rax,[rax+08]
+ test rax,rax
+ jz _ExitMCP
+
+ mov rax,[rsp+30]
+ cmp rax,[pWay]
+ jne _MonCP00
+
+ mov rax,[rsp+40]
+ cmp rax,[pWay]
+ jne _ExitMCP
+
+_MonCP00:
+ mov eax,[rcx+10]
+ mov [rcx+0C],eax
+
+_ExitMCP:
+ mov eax,[rcx+0C]                  // Original code
+ jmp _BackMCP                      // Back to main code
+
+//========================================= 2 ok
+// TBS - During Turn Changing
+_MonPublicOrder:
+ mov dword ptr [aLast],'_MPO'
+
+ mov [lRBX],rbx
+
+ cmp dword ptr [iEnableMPO],0
+ je _ExitMPO                       // Jump if feature is disabled
+
+ cmp r15,[pPlayer]
+ jne _ExitMPO
+
+ xor edx,edx
+
+ mov ebx,[rcx+30]
+ test ebx,ebx
+ cmovs ebx,edx
+ mov [rcx+30],ebx
+ mov ebx,[rcx+34]
+ test ebx,ebx
+ cmovs ebx,edx
+ mov [rcx+34],ebx
+ mov ebx,[rcx+38]
+ test ebx,ebx
+ cmovs ebx,edx
+ mov [rcx+38],ebx
+ mov ebx,[rcx+3c]
+ test ebx,ebx
+ cmovs ebx,edx
+ mov [rcx+3c],ebx
+
+ mov edx,#67
+ cmp edx,[rcx+3c]
+ js _ExitMPO
+
+ mov [rcx+3c],edx
+
+_ExitMPO:
+ mov rbx,[lRBX]
+
+ mov edx,[rcx+3C]                  // Original code
+ mov [rbx+0C],edx                  // Original code (upd PO)
+ jmp _BackMPO                      // Back to main code
+
+//========================================= 2 ok
+// TBS - When looking at the Province
+_MonPopSurplus:
+ mov dword ptr [aLast],'_MPS'
+
+ cmp dword ptr [iEnableMPS],0
+ je _ExitMPS                       // Jump if feature is disabled
+
+ mov rsi,[rdx+000000c0]
+ test rsi,rsi
+ jz _ExitMPS
+
+ mov rsi,[rsi]
+ cmp rsi,[pPlayer]
+ jne _ExitMPS
+
+ mov esi,#20
+
+ cmp esi,[rdx+00000338]
+ js _ExitMPS
+
+ mov [rdx+00000338],esi
+
+_ExitMPS:
+ mov r15d,[rdx+0000033C]           // Original code (Get Growth)
+ jmp _BackMPS                      // Back to main code
+
+//========================================= 2 ok (s3.1)
+// TBS - On ARK selection
+_MonPopSurplus2:
+ mov dword ptr [aLast],'_PS2'
+
+ cmp dword ptr [iEnableMPS],0
+ je _ExitPS2                       // Jump if feature is disabled
+
+ mov rcx,[rax+00000130]
+ test rcx,rcx
+ jz _ExitPS2
+
+ mov rcx,[rcx]
+ cmp rcx,[pPlayer]
+ jne _ExitPS2
+
+ mov rcx,[rax+000005B8]
+ mov rcx,[rcx+18]
+
+ cmp dword ptr [rcx+08],#20
+ jns _ExitPS2
+
+ mov dword ptr [rcx+08],#20
+
+_ExitPS2:
+ mov rcx,[rax+000005B8]            // Original code (Get ppPopSp)
+ jmp _BackPS2                      // Back to main code
+
+//========================================= 2 ok
+// TBS - When a hero/Lord is selected
+_MonSelHero:
+ mov dword ptr [aLast],'_MSH'
+
+ mov r14,[r13]
+ test r14,r14
+ jz _ExitMSH
+
+ mov [pHero],r14
+
+ mov rcx,[r14+000002b0]
+ test rcx,rcx
+ jz _ExitMSH
+
+ mov rcx,[rcx]
+ cmp rcx,[pPlayer]
+ jne _ExitMSH
+
+ cmp dword ptr [iEnableMAP],0
+ je _MonSH00                       // Jump if feature is disabled
+
+ mov r15d,[r14+18]
+ mov [r14+1c],r15d
+
+_MonSH00:
+ cmp dword ptr [iEnableHAA],0
+ je _MonSH01                       // Jump if feature is disabled
+
+ mov byte ptr [r14+00000890],00    // (s3.0)
+ mov byte ptr [r14+00000898],00
+
+_MonSH01:
+ cmp dword ptr [iEnableMXP],0
+ je _ExitMSH                       // Jump if feature is disabled
+
+ lea rcx,[rax-64]
+ cmp ecx,[r13+0000025c]
+ js _ExitMSH
+
+ mov [r13+0000025c],ecx
+
+_ExitMSH:
+ mov r15d,[r13+0000025C]           // Original code (Get XP)
+ jmp _BackMSH                      // Back to main code
+
+//========================================= 2 New (s2.0)
+// TBS - All the time at main game screen (Skaven)
+_MonPlayerFood:
+ mov dword ptr [aLast],'_MPF'
+
+ mov rax,[rdi+08]                  // Original code
+
+ mov rbx,[rax+08]
+ test rbx,rbx
+ jz _ExitMPF
+
+ mov rbx,[rbx+18]
+ cmp rbx,[pPlayer]
+ jne _ExitMPF
+
+ mov [pFood],rax
+
+ cmp dword ptr [iEnableMPF],0
+ je _ExitMPF                       // Jump if feature is disabled
+
+ mov ebx,ctMFOO
+
+ cmp [rax+20],ebx
+ jns _ExitMPF
+
+ mov [rax+20],ebx
+
+_ExitMPF:
+ mov rbx,[rsp+40]                  // Original code
+ jmp _BackMPF                      // Back to main code
+
+//========================================= 2 New (s3.0)
+// TBS - During turn changing
+_MonRitesCD:
+ mov dword ptr [aLast],'_MRC'
+
+ cmp rsi,[pPlayer]
+ jne _ExitMRC
+
+ cmp dword ptr [iEnableMRC],0
+ je _ExitMRC                       // Jump if feature is disabled
+
+ mov edx,1
+
+_ExitMRC:
+ dec edx                           // Original code
+ mov [rax+34],edx                  // Original code (upd CD)
+ jmp _BackMRC                      // Back to main code
+
+//========================================= 2 New (s3.0)
+// TBS - During turn changing
+_MonRitesCD2:
+ mov dword ptr [aLast],'_RC2'
+
+ cmp rsi,[pPlayer]
+ jne _ExitRC2
+
+ cmp dword ptr [iEnableMRC],0
+ je _ExitRC2                       // Jump if feature is disabled
+
+ mov edx,1
+
+_ExitRC2:
+ dec edx                           // Original code
+ mov [rax+20],edx                  // Original code (upd CD)
+ jmp _BackRC2                      // Back to main code
+
+//========================================= 2 New (s3.2)
+// TBS - God Mode for Autobattle and Troop XP
+_GodModeTBS:
+ cmp dword ptr [iEnableGMT],0
+ je _GodMT01                       // Jump if feature is disabled
+
+ mov r13,[rcx+68]
+ cmp r13,[pPlayer]
+ je _GodMT00
+
+ mov dword ptr [rdx+58],00
+ mov dword ptr [rdx+6c],00
+ mov dword ptr [rdx+0000009c],00
+ jmp _ExitGMT
+//--
+_GodMT00:
+ mov r13d,[rdx+50]
+ mov [rdx+58],r13d
+
+ mov r13d,[rdx+64]
+ mov [rdx+6c],r13d
+
+ mov byte ptr [rdx+78],01
+ mov byte ptr [rdx+7a],00
+
+_GodMT01:
+ cmp dword ptr [iEnableMTX],0
+ je _ExitGMT                       // Jump if feature is disabled
+
+ mov r13,[rcx+68]
+ cmp r13,[pPlayer]
+ jne _ExitGMT
+
+ cmp dword ptr [rdx+00000090],00
+ je _ExitGMT
+
+ cmp byte ptr [rcx+000000b8],09
+ jns _ExitGMT
+
+ mov r13d,#30000
+ cmp [rdx+00000090],r13d
+ jns _ExitGMT
+
+ mov [rdx+00000090],r13d
+
+_ExitGMT:
+ cmp byte ptr [rax+00000180],00    // Original code
+ jmp _BackGMT                      // Back to main code
+
+//========================================= new(s3.3)
+// TBS - Keep human player's AMBER at minimum (per Settlement / per Event)
+_MonPlayerAmber:
+ mov dword ptr [aLast],'_MPA'
+
+ cmp r9w,00eb
+ je _MonPA00
+
+ cmp r9w,00ec
+ jne _ExitMPA
+
+ mov rax,RPAE
+ cmp rax,[esp]
+ jne _ExitMPA
+
+ cmp dword ptr [iEnablePAE],0
+ je _ExitMPA                       // Jump if feature is disabled
+
+ cmp r15,[pPlayer]
+ jne _ExitMPA
+
+ mov eax,ctMAPE
+ jmp _MonPA01
+//==
+_MonPA00:
+ mov rax,RPAS
+ cmp rax,[esp]
+ jne _ExitMPA
+
+ cmp dword ptr [iEnablePAS],0
+ je _ExitMPA                       // Jump if feature is disabled
+
+ test r13,r13
+ jz _ExitMPA
+
+ mov rax,[r13+000000a8]
+ test rax,rax
+ jz _ExitMPA
+
+ mov rax,[rax+00000180]
+ cmp rax,[pPlayer]
+ jne _ExitMPA
+
+ mov eax,ctMAPS
+
+_MonPA01:
+ cmp [r11+10],eax
+ jns _ExitMPA
+
+ mov [r11+10],eax
+ mov [r11+14],eax
+
+_ExitMPA:
+ movss xmm1,[r11+10]               // Original code (get value)
+ jmp _BackMPA                      // Back to main code
+
+//=========================================
+align 10,'='
+//=========================================
+ db '===============================&gt;'
+ db 'CE6.7 Script by Recifense 171028'
+//=========================================
+// Variables
+iEnableGMD:
+ dd 0
+iEnableMTA:
+ dd 0
+iEnableMTL:
+ dd 0
+iEnableMWM:
+ dd 0
+iEnableMMT:
+ dd 0
+iEnableMAP:
+ dd 0
+iEnableMTS:
+ dd 0
+iEnableMRP:
+ dd 0
+iEnableMTR:
+ dd 0
+iEnableMCP:
+ dd 0
+iEnableMPO:
+ dd 0
+iEnableMPS:
+ dd 0
+iEnableMXP:
+ dd 0
+iEnableHAA:
+ dd 0
+iEnableMPI:
+ dd 0
+iEnableMPF:
+ dd 0
+iEnableMRC:
+ dd 0
+iEnableGMT:
+ dd 0
+iEnableMTX:
+ dd 0
+iEnablePAE:
+ dd 0
+iEnablePAS:
+ dd 0
+pPlayer:
+ dq MyCode
+pWay:
+ dq MyCode
+pFood:
+ dq 0
+pLord:
+ dq 0
+pHero:
+ dq 0
+pUnit:
+ dq 0
+pDebug:
+ dq 0
+pCommon:
+ dq MyCode
+lRBX:
+ dq 0
+aLast:
+ db 'CE67'
+
+//=========================================
+// Hacking Points
+GDMD:
+ jmp _GodMode
+_BackGMD:
+
+MOTA:
+ jmp _MonTroopAmmo
+ nop
+ nop
+ nop
+_BackMTA:
+
+GDM2:
+ jmp _GodMode2
+ nop
+_BackGM2:
+
+MOTU:
+ jmp _MonTroopUnits
+ nop
+ nop
+_BackMTU:
+
+MOWM:
+ jmp _MonWindsOfMagic
+_BackMWM:
+// ---------------------- TBS
+MOHP:
+ jmp _MonHumanPlayer
+ nop
+ nop
+_BackMHP:
+
+MOAP:
+ jmp _MonActionPoints
+ nop
+_BackMAP:
+
+MAP2:
+ jmp _MonActionPoints2
+ nop
+ nop
+_BackAP2:
+
+MAP3:
+ jmp _MonActionPoints3
+ nop
+ nop
+_BackAP3:
+
+MAP4:
+ jmp _MonActionPoints4
+_BackAP4:
+
+MORP:
+ jmp _MonResearchProg
+ nop
+ nop
+_BackMRP:
+
+MOTR:
+ jmp _MonTroopRecruit
+ nop
+ nop
+_BackMTR:
+
+MOCP:
+ jmp _MonConstProg
+ nop
+_BackMCP:
+
+MOPO:
+ jmp _MonPublicOrder
+ nop
+_BackMPO:
+
+MOPS:
+ jmp _MonPopSurplus
+ nop
+ nop
+_BackMPS:
+
+MPS2:
+ jmp _MonPopSurplus2
+ nop
+ nop
+_BackPS2:
+
+MOSH:
+ jmp _MonSelHero
+ nop
+ nop
+_BackMSH:
+
+MOPF:
+ jmp _MonPlayerFood
+ nop
+ nop
+ nop
+ nop
+_BackMPF:
+
+MORC:
+ jmp _MonRitesCD
+_BackMRC:
+
+MRC2:
+ jmp _MonRitesCD2
+_BackRC2:
+
+GMTB:
+ jmp _GodModeTBS
+ nop
+ nop
+_BackGMT:
+
+MOPA:
+ jmp _MonPlayerAmber
+ nop
+_BackMPA:
+
+//=========================================
+// Script for Restoring Original Codes
+[DISABLE]
+GDMD:
+// mov eax,[rcx+04]
+// cmp edx,eax
+ db 8b 41 04 3b d0
+
+MOTA:
+// test eax,eax
+// je $+4
+// dec eax
+// mov [rdx],eax
+ db 85 c0 74 04 ff c8 89 02
+
+GDM2:
+// push rbp
+// push r12
+// push r14
+ db 40 55 41 54 41 56
+
+MOTU:
+// mov rcx,[rax+000002E8]
+ db 48 8b 88 e8 02 00 00
+
+MOWM:
+// addss xmm0,[rdi+08]
+ db f3 0f 58 47 08
+
+// ---------------------- TBS
+MOHP:
+// mov rcx,[rdx+00000180]
+ db 48 8b 8a 80 01 00 00
+
+MOAP:
+// mov eax,[rcx+00000098]
+ db 8b 81 98 00 00 00
+
+MAP2:
+// mov eax,[r15+00000098]
+ db 41 8b 87 98 00 00 00
+
+MAP3:
+// mov r8d,[rcx+1C]
+// cmp edx,r8d
+ db 44 8b 41 1c 41 3b d0
+
+MAP4:
+// sub esi,eax
+// mov [rbx+1C],eax
+ db 2b f0 89 43 1c
+
+MORP:
+// add r8d,ecx
+// cmp r8d,[rax+5C]
+ db 44 03 c1 44 3b 40 5c
+
+MOTR:
+// add eax,[rbx+50]
+// add rsp,20
+ db 03 43 50 48 83 c4 20
+
+MOCP:
+// inc [rcx+0C]
+// mov eax,[rcx+0C]
+ db ff 41 0c 8b 41 0c
+
+MOPO:
+// mov edx,[rcx+3C]
+// mov [rbx+0C],edx
+ db 8b 51 3c 89 53 0c
+
+MOPS:
+// mov r15d,[rdx+0000033C]
+ db 44 8b ba 3c 03 00 00
+
+MPS2:
+// mov rcx,[rax+000005B8]
+ db 48 8b 88 b8 05 00 00
+
+MOSH:
+// mov r15d,[r13+0000025C]
+ db 45 8b bd 5c 02 00 00
+
+MOPF:
+// mov rax,[rdi+08]
+// mov rbx,[rsp+40]
+ db 48 8b 47 08 48 8b 5c 24 40
+
+MORC:
+// dec edx
+// mov [rax+34],edx
+ db ff ca 89 50 34
+
+MRC2:
+// dec edx
+// mov [rax+20],edx
+ db ff ca 89 50 20
+
+GMTB:
+// cmp byte ptr [rax+00000180],00
+ db 80 b8 80 01 00 00 00
+
+MOPA:
+// movss xmm1,[r11+10]
+ db f3 41 0f 10 4b 10
+
+//=========================================
+// Unregistering Symbols
+unregistersymbol(MyCode)
+unregistersymbol(iEnableGMD)
+unregistersymbol(iEnableMTA)
+unregistersymbol(iEnableMTL)
+unregistersymbol(iEnableMWM)
+unregistersymbol(iEnableMMT)
+unregistersymbol(iEnableMAP)
+unregistersymbol(iEnableMTS)
+unregistersymbol(iEnableMRP)
+unregistersymbol(iEnableMTR)
+unregistersymbol(iEnableMCP)
+unregistersymbol(iEnableMPO)
+unregistersymbol(iEnableMPS)
+unregistersymbol(iEnableMXP)
+unregistersymbol(iEnableHAA)
+unregistersymbol(iEnableMPI)
+unregistersymbol(iEnableMPF)
+unregistersymbol(iEnableMRC)
+unregistersymbol(iEnableGMT)
+unregistersymbol(iEnableMTX)
+unregistersymbol(iEnablePAE)
+unregistersymbol(iEnablePAS)
+unregistersymbol(pPlayer)
+unregistersymbol(pLord)
+unregistersymbol(pHero)
+unregistersymbol(pUnit)
+unregistersymbol(pDebug)
+unregistersymbol(pCommon)
+unregistersymbol(pFood)
+unregistersymbol(aLast)
+
+//=========================================
+dealloc(MyCode)
+//============= Scripts End ===============
+
+// ****************************************
+// NOTES
+// ****************************************
+{
+}
+
+</AssemblerScript>
+      <CheatEntries>
+        <CheatEntry>
+          <ID>138</ID>
+          <Description>"[X] &lt;== God Mode --------------------------&gt; (HK: CTRL+numeric 1 / CTRL+numeric 0)"</Description>
+          <LastState/>
+          <Color>C08000</Color>
+          <VariableType>Auto Assembler Script</VariableType>
+          <AssemblerScript>[enable]
+define(test,LUDO)
+
+{$LUA}
+writeInteger("iEnableGMD",1)
+getAddressList().getMemoryRecordByID(138).Color=0x00008000
+{$ASM}
+
+[disable]
+{$LUA}
+writeInteger("iEnableGMD",0)
+getAddressList().getMemoryRecordByID(138).Color=0x00c08000
+{$ASM}
+
+</AssemblerScript>
+          <Hotkeys>
+            <Hotkey>
+              <Action>Activate</Action>
+              <Keys>
+                <Key>17</Key>
+                <Key>97</Key>
+              </Keys>
+              <ID>0</ID>
+            </Hotkey>
+            <Hotkey>
+              <Action>Deactivate</Action>
+              <Keys>
+                <Key>17</Key>
+                <Key>96</Key>
+              </Keys>
+              <ID>1</ID>
+            </Hotkey>
+          </Hotkeys>
+        </CheatEntry>
+        <CheatEntry>
+          <ID>153</ID>
+          <Description>"[X] &lt;== Unlimited Ammo -------------------&gt; (HK: CTRL+numeric 1 / CTRL+numeric 0)"</Description>
+          <LastState/>
+          <Color>C08000</Color>
+          <VariableType>Auto Assembler Script</VariableType>
+          <AssemblerScript>[enable]
+define(test,LUDO)
+
+{$LUA}
+writeInteger("iEnableMTA",1)
+getAddressList().getMemoryRecordByID(153).Color=0x00008000
+{$ASM}
+
+[disable]
+{$LUA}
+writeInteger("iEnableMTA",0)
+getAddressList().getMemoryRecordByID(153).Color=0x00c08000
+{$ASM}
+
+</AssemblerScript>
+          <Hotkeys>
+            <Hotkey>
+              <Action>Activate</Action>
+              <Keys>
+                <Key>17</Key>
+                <Key>97</Key>
+              </Keys>
+              <ID>0</ID>
+            </Hotkey>
+            <Hotkey>
+              <Action>Deactivate</Action>
+              <Keys>
+                <Key>17</Key>
+                <Key>96</Key>
+              </Keys>
+              <ID>1</ID>
+            </Hotkey>
+          </Hotkeys>
+        </CheatEntry>
+        <CheatEntry>
+          <ID>241</ID>
+          <Description>"[X] &lt;== Full Wind Of Magic -----------------&gt; (HK: CTRL+numeric 1 / CTRL+numeric 0)"</Description>
+          <LastState/>
+          <Color>C08000</Color>
+          <VariableType>Auto Assembler Script</VariableType>
+          <AssemblerScript>[enable]
+define(test,LUDO)
+
+{$LUA}
+writeInteger("iEnableMWM",1)
+getAddressList().getMemoryRecordByID(241).Color=0x00008000
+{$ASM}
+
+[disable]
+{$LUA}
+writeInteger("iEnableMWM",0)
+getAddressList().getMemoryRecordByID(241).Color=0x00c08000
+{$ASM}
+
+</AssemblerScript>
+          <Hotkeys>
+            <Hotkey>
+              <Action>Activate</Action>
+              <Keys>
+                <Key>17</Key>
+                <Key>97</Key>
+              </Keys>
+              <ID>0</ID>
+            </Hotkey>
+            <Hotkey>
+              <Action>Deactivate</Action>
+              <Keys>
+                <Key>17</Key>
+                <Key>96</Key>
+              </Keys>
+              <ID>1</ID>
+            </Hotkey>
+          </Hotkeys>
+        </CheatEntry>
+        <CheatEntry>
+          <ID>96</ID>
+          <Description>"[X] &lt;== Minimum Treasure -----------------&gt; (HK: CTRL+Home / CTRL+End)"</Description>
+          <LastState/>
+          <Color>C08000</Color>
+          <VariableType>Auto Assembler Script</VariableType>
+          <AssemblerScript>[enable]
+define(test,LUDO)
+
+{$LUA}
+writeInteger("iEnableMMT",1)
+getAddressList().getMemoryRecordByID(96).Color=0x0008000
+{$ASM}
+
+[disable]
+{$LUA}
+writeInteger("iEnableMMT",0)
+getAddressList().getMemoryRecordByID(96).Color=0x0c08000
+{$ASM}
+
+</AssemblerScript>
+          <Hotkeys>
+            <Hotkey>
+              <Action>Activate</Action>
+              <Keys>
+                <Key>17</Key>
+                <Key>36</Key>
+              </Keys>
+              <ID>0</ID>
+            </Hotkey>
+            <Hotkey>
+              <Action>Deactivate</Action>
+              <Keys>
+                <Key>17</Key>
+                <Key>35</Key>
+              </Keys>
+              <ID>1</ID>
+            </Hotkey>
+          </Hotkeys>
+        </CheatEntry>
+        <CheatEntry>
+          <ID>247</ID>
+          <Description>"[X] &lt;== Minimum Influence  ----------------&gt; (HK: CTRL+Home / CTRL+End)"</Description>
+          <LastState/>
+          <Color>C08000</Color>
+          <VariableType>Auto Assembler Script</VariableType>
+          <AssemblerScript>[enable]
+define(test,LUDO)
+
+{$LUA}
+writeInteger("iEnableMPI",1)
+getAddressList().getMemoryRecordByID(247).Color=0x00008000
+{$ASM}
+
+[disable]
+{$LUA}
+writeInteger("iEnableMPI",0)
+getAddressList().getMemoryRecordByID(247).Color=0x00c08000
+{$ASM}
+
+</AssemblerScript>
+          <Hotkeys>
+            <Hotkey>
+              <Action>Activate</Action>
+              <Keys>
+                <Key>17</Key>
+                <Key>36</Key>
+              </Keys>
+              <ID>0</ID>
+            </Hotkey>
+            <Hotkey>
+              <Action>Deactivate</Action>
+              <Keys>
+                <Key>17</Key>
+                <Key>35</Key>
+              </Keys>
+              <ID>1</ID>
+            </Hotkey>
+          </Hotkeys>
+        </CheatEntry>
+        <CheatEntry>
+          <ID>248</ID>
+          <Description>"[X] &lt;== Minimum Food (Skaven) -----------&gt; (HK: CTRL+Home / CTRL+End)"</Description>
+          <LastState/>
+          <Color>C08000</Color>
+          <VariableType>Auto Assembler Script</VariableType>
+          <AssemblerScript>[enable]
+define(test,LUDO)
+
+{$LUA}
+writeInteger("iEnableMPF",1)
+getAddressList().getMemoryRecordByID(248).Color=0x00008000
+{$ASM}
+
+[disable]
+{$LUA}
+writeInteger("iEnableMPF",0)
+getAddressList().getMemoryRecordByID(248).Color=0x00c08000
+{$ASM}
+
+</AssemblerScript>
+          <Hotkeys>
+            <Hotkey>
+              <Action>Activate</Action>
+              <Keys>
+                <Key>17</Key>
+                <Key>36</Key>
+              </Keys>
+              <ID>0</ID>
+            </Hotkey>
+            <Hotkey>
+              <Action>Deactivate</Action>
+              <Keys>
+                <Key>17</Key>
+                <Key>35</Key>
+              </Keys>
+              <ID>1</ID>
+            </Hotkey>
+          </Hotkeys>
+        </CheatEntry>
+        <CheatEntry>
+          <ID>143</ID>
+          <Description>"[X] &lt;== Research in 1 Turn ------------------&gt; (HK: CTRL+Home / CTRL+End)"</Description>
+          <LastState/>
+          <Color>C08000</Color>
+          <VariableType>Auto Assembler Script</VariableType>
+          <AssemblerScript>[enable]
+define(test,LUDO)
+
+{$LUA}
+writeInteger("iEnableMRP",1)
+getAddressList().getMemoryRecordByID(143).Color=0x00008000
+{$ASM}
+
+[disable]
+{$LUA}
+writeInteger("iEnableMRP",0)
+getAddressList().getMemoryRecordByID(143).Color=0x00c08000
+{$ASM}
+
+</AssemblerScript>
+          <Hotkeys>
+            <Hotkey>
+              <Action>Activate</Action>
+              <Keys>
+                <Key>17</Key>
+                <Key>36</Key>
+              </Keys>
+              <ID>0</ID>
+            </Hotkey>
+            <Hotkey>
+              <Action>Deactivate</Action>
+              <Keys>
+                <Key>17</Key>
+                <Key>35</Key>
+              </Keys>
+              <ID>1</ID>
+            </Hotkey>
+          </Hotkeys>
+        </CheatEntry>
+        <CheatEntry>
+          <ID>161</ID>
+          <Description>"[X] &lt;== Construction in 1 Turn  -------------&gt; (HK: CTRL+Home / CTRL+End)"</Description>
+          <LastState/>
+          <Color>C08000</Color>
+          <VariableType>Auto Assembler Script</VariableType>
+          <AssemblerScript>[enable]
+define(test,LUDO)
+
+{$LUA}
+writeInteger("iEnableMCP",1)
+getAddressList().getMemoryRecordByID(161).Color=0x00008000
+{$ASM}
+
+[disable]
+{$LUA}
+writeInteger("iEnableMCP",0)
+getAddressList().getMemoryRecordByID(161).Color=0x00c08000
+{$ASM}
+
+</AssemblerScript>
+          <Hotkeys>
+            <Hotkey>
+              <Action>Activate</Action>
+              <Keys>
+                <Key>17</Key>
+                <Key>36</Key>
+              </Keys>
+              <ID>0</ID>
+            </Hotkey>
+            <Hotkey>
+              <Action>Deactivate</Action>
+              <Keys>
+                <Key>17</Key>
+                <Key>35</Key>
+              </Keys>
+              <ID>1</ID>
+            </Hotkey>
+          </Hotkeys>
+        </CheatEntry>
+        <CheatEntry>
+          <ID>278</ID>
+          <Description>"[X] &lt;== Rites Cooldown in 1 Turn  ----------&gt; (HK: CTRL+Home / CTRL+End)"</Description>
+          <LastState/>
+          <Color>C08000</Color>
+          <VariableType>Auto Assembler Script</VariableType>
+          <AssemblerScript>[enable]
+define(test,LUDO)
+
+{$LUA}
+writeInteger("iEnableMRC",1)
+getAddressList().getMemoryRecordByID(278).Color=0x00008000
+{$ASM}
+
+[disable]
+{$LUA}
+writeInteger("iEnableMRC",0)
+getAddressList().getMemoryRecordByID(278).Color=0x00c08000
+{$ASM}
+
+</AssemblerScript>
+          <Hotkeys>
+            <Hotkey>
+              <Action>Activate</Action>
+              <Keys>
+                <Key>17</Key>
+                <Key>36</Key>
+              </Keys>
+              <ID>0</ID>
+            </Hotkey>
+            <Hotkey>
+              <Action>Deactivate</Action>
+              <Keys>
+                <Key>17</Key>
+                <Key>35</Key>
+              </Keys>
+              <ID>1</ID>
+            </Hotkey>
+          </Hotkeys>
+        </CheatEntry>
+        <CheatEntry>
+          <ID>144</ID>
+          <Description>"[X] &lt;== Minimum Public Order -------------&gt; (HK: CTRL+Home / CTRL+End)"</Description>
+          <LastState/>
+          <Color>C08000</Color>
+          <VariableType>Auto Assembler Script</VariableType>
+          <AssemblerScript>[enable]
+define(test,LUDO)
+
+{$LUA}
+writeInteger("iEnableMPO",1)
+getAddressList().getMemoryRecordByID(144).Color=0x00008000
+{$ASM}
+
+[disable]
+{$LUA}
+writeInteger("iEnableMPO",0)
+getAddressList().getMemoryRecordByID(144).Color=0x00c08000
+{$ASM}
+
+</AssemblerScript>
+          <Hotkeys>
+            <Hotkey>
+              <Action>Activate</Action>
+              <Keys>
+                <Key>17</Key>
+                <Key>36</Key>
+              </Keys>
+              <ID>0</ID>
+            </Hotkey>
+            <Hotkey>
+              <Action>Deactivate</Action>
+              <Keys>
+                <Key>17</Key>
+                <Key>35</Key>
+              </Keys>
+              <ID>1</ID>
+            </Hotkey>
+          </Hotkeys>
+        </CheatEntry>
+        <CheatEntry>
+          <ID>146</ID>
+          <Description>"[X] &lt;== Minimum Pop Surplus  -------------&gt; (HK: CTRL+Home / CTRL+End)"</Description>
+          <LastState/>
+          <Color>C08000</Color>
+          <VariableType>Auto Assembler Script</VariableType>
+          <AssemblerScript>[enable]
+define(test,LUDO)
+
+{$LUA}
+writeInteger("iEnableMPS",1)
+getAddressList().getMemoryRecordByID(146).Color=0x00008000
+{$ASM}
+
+[disable]
+{$LUA}
+writeInteger("iEnableMPS",0)
+getAddressList().getMemoryRecordByID(146).Color=0x00c08000
+{$ASM}
+
+</AssemblerScript>
+          <Hotkeys>
+            <Hotkey>
+              <Action>Activate</Action>
+              <Keys>
+                <Key>17</Key>
+                <Key>36</Key>
+              </Keys>
+              <ID>0</ID>
+            </Hotkey>
+            <Hotkey>
+              <Action>Deactivate</Action>
+              <Keys>
+                <Key>17</Key>
+                <Key>35</Key>
+              </Keys>
+              <ID>1</ID>
+            </Hotkey>
+          </Hotkeys>
+        </CheatEntry>
+        <CheatEntry>
+          <ID>139</ID>
+          <Description>"[X] &lt;== Recover Troop Size  -----------------&gt; (HK: CTRL+Page Up / CTRL+Page Down)"</Description>
+          <LastState/>
+          <Color>C08000</Color>
+          <VariableType>Auto Assembler Script</VariableType>
+          <AssemblerScript>[enable]
+define(test,LUDO)
+
+{$LUA}
+writeInteger("iEnableMTS",1)
+getAddressList().getMemoryRecordByID(139).Color=0x00008000
+{$ASM}
+
+[disable]
+{$LUA}
+writeInteger("iEnableMTS",0)
+getAddressList().getMemoryRecordByID(139).Color=0x00c08000
+{$ASM}
+
+</AssemblerScript>
+          <Hotkeys>
+            <Hotkey>
+              <Action>Activate</Action>
+              <Keys>
+                <Key>17</Key>
+                <Key>33</Key>
+              </Keys>
+              <ID>0</ID>
+            </Hotkey>
+            <Hotkey>
+              <Action>Deactivate</Action>
+              <Keys>
+                <Key>17</Key>
+                <Key>34</Key>
+              </Keys>
+              <ID>1</ID>
+            </Hotkey>
+          </Hotkeys>
+        </CheatEntry>
+        <CheatEntry>
+          <ID>140</ID>
+          <Description>"[X] &lt;== Recruitment in 1 Turn  --------------&gt; (HK: CTRL+Page Up / CTRL+Page Down)"</Description>
+          <LastState/>
+          <Color>C08000</Color>
+          <VariableType>Auto Assembler Script</VariableType>
+          <AssemblerScript>[enable]
+define(test,LUDO)
+
+{$LUA}
+writeInteger("iEnableMTR",1)
+getAddressList().getMemoryRecordByID(140).Color=0x00008000
+{$ASM}
+
+[disable]
+{$LUA}
+writeInteger("iEnableMTR",0)
+getAddressList().getMemoryRecordByID(140).Color=0x00c08000
+{$ASM}
+
+</AssemblerScript>
+          <Hotkeys>
+            <Hotkey>
+              <Action>Activate</Action>
+              <Keys>
+                <Key>17</Key>
+                <Key>33</Key>
+              </Keys>
+              <ID>0</ID>
+            </Hotkey>
+            <Hotkey>
+              <Action>Deactivate</Action>
+              <Keys>
+                <Key>17</Key>
+                <Key>34</Key>
+              </Keys>
+              <ID>1</ID>
+            </Hotkey>
+          </Hotkeys>
+        </CheatEntry>
+        <CheatEntry>
+          <ID>147</ID>
+          <Description>"[X] &lt;== Unlimited Action Points  ------------&gt; (HK: CTRL+Insert / CTRL+Delete)"</Description>
+          <LastState/>
+          <Color>C08000</Color>
+          <VariableType>Auto Assembler Script</VariableType>
+          <AssemblerScript>[enable]
+define(test,LUDO)
+
+{$LUA}
+writeInteger("iEnableMAP",1)
+getAddressList().getMemoryRecordByID(147).Color=0x00008000
+{$ASM}
+
+[disable]
+{$LUA}
+writeInteger("iEnableMAP",0)
+getAddressList().getMemoryRecordByID(147).Color=0x00c08000
+{$ASM}
+
+</AssemblerScript>
+          <Hotkeys>
+            <Hotkey>
+              <Action>Activate</Action>
+              <Keys>
+                <Key>17</Key>
+                <Key>45</Key>
+              </Keys>
+              <ID>0</ID>
+            </Hotkey>
+            <Hotkey>
+              <Action>Deactivate</Action>
+              <Keys>
+                <Key>17</Key>
+                <Key>46</Key>
+              </Keys>
+              <ID>1</ID>
+            </Hotkey>
+          </Hotkeys>
+        </CheatEntry>
+        <CheatEntry>
+          <ID>149</ID>
+          <Description>"[X] &lt;== Agents can Act Again ---------------&gt; (HK: CTRL+Insert / CTRL+Delete)"</Description>
+          <LastState/>
+          <Color>C08000</Color>
+          <VariableType>Auto Assembler Script</VariableType>
+          <AssemblerScript>[enable]
+define(test,LUDO)
+
+{$LUA}
+writeInteger("iEnableHAA",1)
+getAddressList().getMemoryRecordByID(149).Color=0x00008000
+{$ASM}
+
+[disable]
+{$LUA}
+writeInteger("iEnableHAA",0)
+getAddressList().getMemoryRecordByID(149).Color=0x00c08000
+{$ASM}
+
+</AssemblerScript>
+          <Hotkeys>
+            <Hotkey>
+              <Action>Activate</Action>
+              <Keys>
+                <Key>17</Key>
+                <Key>45</Key>
+              </Keys>
+              <ID>0</ID>
+            </Hotkey>
+            <Hotkey>
+              <Action>Deactivate</Action>
+              <Keys>
+                <Key>17</Key>
+                <Key>46</Key>
+              </Keys>
+              <ID>1</ID>
+            </Hotkey>
+          </Hotkeys>
+        </CheatEntry>
+        <CheatEntry>
+          <ID>155</ID>
+          <Description>"[X] &lt;== Hero XP almost complete -----------&gt; (HK: CTRL+Insert / CTRL+Delete)"</Description>
+          <LastState/>
+          <Color>C08000</Color>
+          <VariableType>Auto Assembler Script</VariableType>
+          <AssemblerScript>[enable]
+define(test,LUDO)
+
+{$LUA}
+writeInteger("iEnableMXP",1)
+getAddressList().getMemoryRecordByID(155).Color=0x00008000
+{$ASM}
+
+[disable]
+{$LUA}
+writeInteger("iEnableMXP",0)
+getAddressList().getMemoryRecordByID(155).Color=0x00c08000
+{$ASM}
+
+</AssemblerScript>
+          <Hotkeys>
+            <Hotkey>
+              <Action>Activate</Action>
+              <Keys>
+                <Key>17</Key>
+                <Key>45</Key>
+              </Keys>
+              <ID>0</ID>
+            </Hotkey>
+            <Hotkey>
+              <Action>Deactivate</Action>
+              <Keys>
+                <Key>17</Key>
+                <Key>46</Key>
+              </Keys>
+              <ID>1</ID>
+            </Hotkey>
+          </Hotkeys>
+        </CheatEntry>
+        <CheatEntry>
+          <ID>280</ID>
+          <Description>"[X] &lt;== Auto-Resolve God Mode ------------&gt; (HK: CTRL+numeric 7 / CTRL+numeric 4)"</Description>
+          <LastState/>
+          <Color>C08000</Color>
+          <VariableType>Auto Assembler Script</VariableType>
+          <AssemblerScript>[enable]
+define(test,LUDO)
+
+{$LUA}
+writeInteger("iEnableGMT",1)
+getAddressList().getMemoryRecordByID(280).Color=0x00004000
+{$ASM}
+
+[disable]
+{$LUA}
+writeInteger("iEnableGMT",0)
+getAddressList().getMemoryRecordByID(280).Color=0x00c08000
+{$ASM}
+
+</AssemblerScript>
+          <Hotkeys>
+            <Hotkey>
+              <Action>Activate</Action>
+              <Keys>
+                <Key>17</Key>
+                <Key>103</Key>
+              </Keys>
+              <ID>0</ID>
+            </Hotkey>
+            <Hotkey>
+              <Action>Deactivate</Action>
+              <Keys>
+                <Key>17</Key>
+                <Key>100</Key>
+              </Keys>
+              <ID>1</ID>
+            </Hotkey>
+          </Hotkeys>
+        </CheatEntry>
+        <CheatEntry>
+          <ID>281</ID>
+          <Description>"[X] &lt;== Troops Quick Level Up --------------&gt; (HK: CTRL+numeric 9 / CTRL+numeric 6)"</Description>
+          <LastState/>
+          <Color>C08000</Color>
+          <VariableType>Auto Assembler Script</VariableType>
+          <AssemblerScript>[enable]
+define(test,LUDO)
+
+{$LUA}
+writeInteger("iEnableMTX",1)
+getAddressList().getMemoryRecordByID(281).Color=0x00004000
+{$ASM}
+
+[disable]
+{$LUA}
+writeInteger("iEnableMTX",0)
+getAddressList().getMemoryRecordByID(281).Color=0x00c08000
+{$ASM}
+
+</AssemblerScript>
+          <Hotkeys>
+            <Hotkey>
+              <Action>Activate</Action>
+              <Keys>
+                <Key>17</Key>
+                <Key>105</Key>
+              </Keys>
+              <ID>0</ID>
+            </Hotkey>
+            <Hotkey>
+              <Action>Deactivate</Action>
+              <Keys>
+                <Key>17</Key>
+                <Key>102</Key>
+              </Keys>
+              <ID>1</ID>
+            </Hotkey>
+          </Hotkeys>
+        </CheatEntry>
+        <CheatEntry>
+          <ID>308</ID>
+          <Description>"[X] &lt;== Minimum Amber per Settlement  ---&gt; (HK: CTRL+numeric 8/ CTRL+numeric 5)"</Description>
+          <LastState/>
+          <Color>C08000</Color>
+          <VariableType>Auto Assembler Script</VariableType>
+          <AssemblerScript>[enable]
+define(test,LUDO)
+
+{$LUA}
+writeInteger("iEnablePAS",1)
+getAddressList().getMemoryRecordByID(308).Color=0x00004000
+{$ASM}
+
+[disable]
+{$LUA}
+writeInteger("iEnablePAS",0)
+getAddressList().getMemoryRecordByID(308).Color=0x00c08000
+{$ASM}
+
+</AssemblerScript>
+          <Hotkeys>
+            <Hotkey>
+              <Action>Activate</Action>
+              <Keys>
+                <Key>17</Key>
+                <Key>104</Key>
+              </Keys>
+              <ID>0</ID>
+            </Hotkey>
+            <Hotkey>
+              <Action>Deactivate</Action>
+              <Keys>
+                <Key>17</Key>
+                <Key>101</Key>
+              </Keys>
+              <ID>1</ID>
+            </Hotkey>
+          </Hotkeys>
+        </CheatEntry>
+        <CheatEntry>
+          <ID>309</ID>
+          <Description>"[X] &lt;== Minimum Event Amber (total)  ------&gt; (HK: CTRL+numeric 8/ CTRL+numeric 5)"</Description>
+          <LastState/>
+          <Color>C08000</Color>
+          <VariableType>Auto Assembler Script</VariableType>
+          <AssemblerScript>[enable]
+define(test,LUDO)
+
+{$LUA}
+writeInteger("iEnablePAE",1)
+getAddressList().getMemoryRecordByID(309).Color=0x00004000
+{$ASM}
+
+[disable]
+{$LUA}
+writeInteger("iEnablePAE",0)
+getAddressList().getMemoryRecordByID(309).Color=0x00c08000
+{$ASM}
+
+</AssemblerScript>
+          <Hotkeys>
+            <Hotkey>
+              <Action>Activate</Action>
+              <Keys>
+                <Key>17</Key>
+                <Key>104</Key>
+              </Keys>
+              <ID>0</ID>
+            </Hotkey>
+            <Hotkey>
+              <Action>Deactivate</Action>
+              <Keys>
+                <Key>17</Key>
+                <Key>101</Key>
+              </Keys>
+              <ID>1</ID>
+            </Hotkey>
+          </Hotkeys>
+        </CheatEntry>
+        <CheatEntry>
+          <ID>243</ID>
+          <Description>"[X] &lt;==================== Lord/Hero Info"</Description>
+          <Options moHideChildren="1"/>
+          <LastState Value="" RealAddress="00000000"/>
+          <Color>404080</Color>
+          <GroupHeader>1</GroupHeader>
+          <CheatEntries>
+            <CheatEntry>
+              <ID>244</ID>
+              <Description>"Lord/Hero Name ==&gt;"</Description>
+              <Color>FF00FF</Color>
+              <VariableType>String</VariableType>
+              <Length>32</Length>
+              <Unicode>1</Unicode>
+              <CodePage>0</CodePage>
+              <ZeroTerminate>1</ZeroTerminate>
+              <Address>pHero</Address>
+              <Offsets>
+                <Offset>0</Offset>
+                <Offset>8</Offset>
+                <Offset>370</Offset>
+              </Offsets>
+            </CheatEntry>
+            <CheatEntry>
+              <ID>245</ID>
+              <Description>"Current Available Points ==&gt;"</Description>
+              <Color>0000FF</Color>
+              <VariableType>4 Bytes</VariableType>
+              <Address>pHero</Address>
+              <Offsets>
+                <Offset>568</Offset>
+              </Offsets>
+            </CheatEntry>
+            <CheatEntry>
+              <ID>246</ID>
+              <Description>"Current XP ==&gt;"</Description>
+              <Color>0000FF</Color>
+              <VariableType>4 Bytes</VariableType>
+              <Address>pHero</Address>
+              <Offsets>
+                <Offset>574</Offset>
+              </Offsets>
+            </CheatEntry>
+          </CheatEntries>
+        </CheatEntry>
+        <CheatEntry>
+          <ID>266</ID>
+          <Description>"[X] &lt;==================== Player Info"</Description>
+          <Options moHideChildren="1"/>
+          <LastState Value="" RealAddress="00000000"/>
+          <Color>404080</Color>
+          <GroupHeader>1</GroupHeader>
+          <CheatEntries>
+            <CheatEntry>
+              <ID>267</ID>
+              <Description>"Faction Name ==&gt;"</Description>
+              <Color>FF00FF</Color>
+              <VariableType>String</VariableType>
+              <Length>32</Length>
+              <Unicode>1</Unicode>
+              <CodePage>0</CodePage>
+              <ZeroTerminate>1</ZeroTerminate>
+              <Address>pPlayer</Address>
+              <Offsets>
+                <Offset>0</Offset>
+                <Offset>8</Offset>
+                <Offset>b88</Offset>
+              </Offsets>
+            </CheatEntry>
+            <CheatEntry>
+              <ID>268</ID>
+              <Description>"Current Treasure ==&gt;"</Description>
+              <Color>0000FF</Color>
+              <VariableType>4 Bytes</VariableType>
+              <Address>pPlayer</Address>
+              <Offsets>
+                <Offset>b40</Offset>
+              </Offsets>
+            </CheatEntry>
+            <CheatEntry>
+              <ID>269</ID>
+              <Description>"Current Influence ==&gt;"</Description>
+              <Color>0000FF</Color>
+              <VariableType>4 Bytes</VariableType>
+              <Address>pPlayer</Address>
+              <Offsets>
+                <Offset>de0</Offset>
+              </Offsets>
+            </CheatEntry>
+            <CheatEntry>
+              <ID>270</ID>
+              <Description>"Current Way-Fragments ==&gt;"</Description>
+              <Color>0000FF</Color>
+              <VariableType>4 Bytes</VariableType>
+              <Address>pPlayer</Address>
+              <Offsets>
+                <Offset>88</Offset>
+                <Offset>1c18</Offset>
+              </Offsets>
+            </CheatEntry>
+            <CheatEntry>
+              <ID>273</ID>
+              <Description>"Current Slave-Amount 01 ==&gt;"</Description>
+              <Color>0000FF</Color>
+              <VariableType>4 Bytes</VariableType>
+              <Address>pPlayer</Address>
+              <Offsets>
+                <Offset>20</Offset>
+                <Offset>50</Offset>
+                <Offset>1c20</Offset>
+              </Offsets>
+            </CheatEntry>
+            <CheatEntry>
+              <ID>279</ID>
+              <Description>"Current Slave-Amount 02 ==&gt;"</Description>
+              <Color>0000FF</Color>
+              <VariableType>4 Bytes</VariableType>
+              <Address>pPlayer</Address>
+              <Offsets>
+                <Offset>20</Offset>
+                <Offset>58</Offset>
+                <Offset>1c20</Offset>
+              </Offsets>
+            </CheatEntry>
+            <CheatEntry>
+              <ID>277</ID>
+              <Description>"Current Food-Amount ==&gt;"</Description>
+              <Color>0000FF</Color>
+              <VariableType>4 Bytes</VariableType>
+              <Address>pFood</Address>
+              <Offsets>
+                <Offset>20</Offset>
+              </Offsets>
+            </CheatEntry>
+          </CheatEntries>
+        </CheatEntry>
+      </CheatEntries>
+    </CheatEntry>
+    <CheatEntry>
+      <ID>228</ID>
+      <Description>"[X] &lt;== Table/Script Information"</Description>
+      <Options moHideChildren="1"/>
+      <LastState/>
+      <Color>0000FF</Color>
+      <VariableType>Auto Assembler Script</VariableType>
+      <AssemblerScript>[enable]
+define(test,LUDO)
+
+{$LUA}
+getMainForm().CommentButton.doClick()
+{$ASM}
+
+[disable]
+
+</AssemblerScript>
+    </CheatEntry>
+  </CheatEntries>
+  <UserdefinedSymbols>
+    <SymbolEntry>
+      <Name>Recifense</Name>
+      <Address>20171026</Address>
+    </SymbolEntry>
+  </UserdefinedSymbols>
+  <Comments>===========================================
+ Game Title    : Total War - Warhammer 2
+ Game Version  : 1.1.0 (4871)
+ Game Sponsor  : Patrons
+ Process Name  : Warhammer2.exe
+ Relevant Info : 64bits/TBS/RTS
+ Script Version: 3.3
+ CE Version    : 6.7
+ Release date  : 28-Oct-2017
+ Author        : Recifense
+ History:
+ 29-Sep-2017: First Release
+ 30-Sep-2017: Trying to Fix Construction + Minimum Food (s2.0)
+ 01-Oct-2017: Added "Rites Cooldown in 1 turn" and fix "CanActAgain" (s3.0)
+ 03-Oct-2017: Included Arks in Pop Surplus (s3.1)
+ 10-Oct-2017: God Mode for Auto-Resolve battles and Troop Quick Level Up (s3.2)
+ 26-Oct-2017: Release for version 1.1.0-4871
+ 28-Oct-2017: Porting of AMBER features from Warhammer TW (s3.3)
+ Features:
+ - God Mode (RTS)              [1]
+ - Full Ammo                   [2]
+ - Minimum Leadership          [3] (GM)
+ - Minimum Treasure            [4]
+ - Minimum Influence           [E]
+ - Minimum Food (Skaven)       [F]
+ - Unlimited Action Points     [5]
+ - Recover Troop Size/Hero HP  [6]
+ - Research in 1 turn          [7]
+ - Recruitment in 1 turn       [8]
+ - Construction in 1 turn      [9]
+ - Rites Cooldown in 1 turn    [G]
+ - Minimum Public Order        [A]
+ - Minimum Pop Surplus         [B] (including Arks) (s3.1)
+ - Level almost complete (sel hero XP) [C]
+ - Hero can Act Again                  [D]
+ - God Mode for Auto-resolve battles   [H] (s3.2)
+ - Troops Quick Level Up               [I] (s3.2) 
+ - Minimum Amber Per Settlement[J] (s3.3)
+ - Minimum Total Event Amber   [K] (s3.3)
+ - Some Pointers               [R]
+===========================================
+[1] For your troops/heroes/lords duirng RTS battles;
+[2] For your troops that use it;
+[3] For avoiding your troops/heroes/lords to panic (Included in GM);
+[4] Minimum value is 67000;
+[5] Your armies and heroes can move freely;
+[6] Your troops will recover size and lords will recover health;
+[7] Your research will complete in 1 turn;
+[8] Your armies will be reinforced in 1 turn;
+[9] The construction in your provinces will complete in 1 turn;
+[A] Minimum Public Order for your provinces will be 67;
+[B] Every time you access your province the POP Surplus will be 10 at least;
+[C] Your Heroes/Lords/etc will level up quickly;
+[D] You heroes/Lords/etc can act more then once during a turn;
+[E] Minimum value is 67;
+[F] Minimum value is 80;
+[G] A Rite per turn;
+[H] You don't need to manually fight all battles;
+[I] Troops will get to max level after the first battle;
+[J] When playing Elves, minimu is set to 5;
+[K] When playing Elves, minimu is set to 15;
+[R] Used at the table;
+===========================================
+[USAGE]
+1) Run CE67;
+2) Run Game;
+3) Load the game process "Warhammer2.exe" in CE;
+4) Load this table and activate the main script;
+5) Now Activate the script of each cheat you want to use;
+6) Game On;
+===========================================
+[HOTKEYS]
+- See description on the table entries;
+===========================================
+[ADVICE]
+When you can,save the game before starting using table/cheat. So you can always come back in case you don't like the result.
+===========================================
+[INFO]
+Tested on Win 10 64bits
+===========================================
+Cheers!
+</Comments>
+</CheatTable>
